@@ -47,9 +47,16 @@ class ServerGroupTransformers {
         //////////////////////////////////
         //The EAP/AS 7.x chains
 
-        // module-options was introduced in 13, WildFly 20
-        ResourceTransformationDescriptionBuilder currentTo13 = createBuilderFromCurrent(chainedBuilder, KernelAPIVersion.VERSION_13_0);
-        JvmTransformers.registerTransformers13_AndBelow(currentTo13);
+        // graceful-startup attribute was introduced in Kernel 16 (Wildfly 23)
+        ResourceTransformationDescriptionBuilder currentTo15 = createBuilderFromCurrent(chainedBuilder, KernelAPIVersion.VERSION_15_0)
+                .getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, ServerGroupResourceDefinition.GRACEFUL_STARTUP)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ServerGroupResourceDefinition.GRACEFUL_STARTUP)
+                .end();
+
+        // module-options was introduced in 14, WildFly 20
+        ResourceTransformationDescriptionBuilder builder15to13 = createBuilder(chainedBuilder, KernelAPIVersion.VERSION_15_0, KernelAPIVersion.VERSION_13_0);
+        JvmTransformers.registerTransformers13_AndBelow(builder15to13);
 
         //timeout attribute renamed to suspend-timeout in Version 9.0. Must be renamed for 8.0 and below
         ResourceTransformationDescriptionBuilder builder10to8 = createBuilder(chainedBuilder, KernelAPIVersion.VERSION_10_0, KernelAPIVersion.VERSION_8_0);
