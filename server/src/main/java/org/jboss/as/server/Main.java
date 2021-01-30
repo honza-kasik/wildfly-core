@@ -305,10 +305,6 @@ public final class Main {
                         case CommandLineConstants.SUSPEND_MODE:
                             startSuspended = true;
                             break;
-                        case CommandLineConstants.GRACEFUL_STARTUP:
-                            startGracefully = true;
-                            break;
-
                         case CommandLineConstants.NORMAL_MODE:
                             break;
                         default:
@@ -316,8 +312,24 @@ public final class Main {
                             usage();
                             return new ServerEnvironmentWrapper(ServerEnvironmentWrapper.ServerEnvironmentStatus.ERROR);
                     }
-                } else if (arg.equals(CommandLineConstants.GRACEFUL_STARTUP)) {
-                    startGracefully = true;
+                } else if (arg.startsWith(CommandLineConstants.GRACEFUL_STARTUP)) {
+                    int idx = arg.indexOf('=');
+                    if (idx == arg.length() - 1) {
+                        STDERR.println(ServerLogger.ROOT_LOGGER.noArgValue(arg));
+                        usage();
+                        return new ServerEnvironmentWrapper(ServerEnvironmentWrapper.ServerEnvironmentStatus.ERROR);
+                    }
+                    String value = (idx > -1 ? arg.substring(idx + 1) : args[++i])
+                            .toLowerCase(Locale.ENGLISH);
+                    if ("true".equals(value)) {
+                        startGracefully = true;
+                    } else if ("false".equals(value)) {
+                        startGracefully = false;
+                    } else {
+                        STDERR.println(ServerLogger.ROOT_LOGGER.invalidCommandLineOption(arg));
+                        usage();
+                        return new ServerEnvironmentWrapper(ServerEnvironmentWrapper.ServerEnvironmentStatus.ERROR);
+                    }
                 } else if (arg.equals(CommandLineConstants.DEBUG)) { // Need to process the debug options as they cannot be filtered out in Windows
                     // The next option may or may not be a port. Assume if it's a number and doesn't start with a - it's the port
                     final int next = i + 1;
